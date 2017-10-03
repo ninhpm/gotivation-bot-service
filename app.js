@@ -10,7 +10,7 @@ var bot = new builder.UniversalBot(
         },
         (session, results) => {
             const profile = session.userData.profile = results.response;
-            session.endConversation(`Hello, ${profile.name}, I love ${profile.company}`)
+            session.endConversation(`Hello, ${profile.name}, I also want to work at ${profile.company} :)`)
         }
     ]
 );

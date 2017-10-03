@@ -15,7 +15,7 @@ var bot = new builder.UniversalBot(
 bot.dialog("search", [
     (session, args, next) => {
         if (session.message.text.toLocaleLowerCase() == "search") {
-            builder.Prompts.text(session, "Who did you want to seach for?");
+            builder.Prompts.text(session, "Who did you want to seach for?"); // geektrainer ryanvolum
         } else {
             // the user types in : search <<name>>
             const query = session.message.text.substring(7);

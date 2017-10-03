@@ -6,31 +6,34 @@ const builder = require('botbuilder');
 const restify = require('restify');
 const githubClient = require("./github-client");
 
-var connector = new builder.ChatConnector();
+const server = restify.createServer();
+server.listen(3978, () => {
+    console.log("Server up on port: 3978 !!!");
+});
 
-var bot = new builder.UniversalBot(
-    connector,
-    (session) => {
-        session.endConversation("Hi there! I'm the GitHub bot. I can help you find Github");
-    }
-)
+var connector = new builder.ChatConnector({
+    appId: process.env.MICROSOFT_APP_ID,
+    appPassword: process.env.MICROSOFT_APP_PASS
+});
 
-const recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL);
-recognizer.onEnabled((context, callback) => {
-    if (context.dialogStack().length > 0) {
-        callback(null, false);
-    } else {
-        callback(null, true);
-    }
+server.post("api/messages", connector.listen());
+
+var bot = new builder.UniversalBot(connector, (session) => {
+    session.send('Sorry, I did not understand \'%s\'. Type \'help\' if you need assistance.', session.message.text);
+})
+
+const recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL).onEnabled((context, callback) => {
+    var enabled = context.dialogStack().length === 0;
+    callback(null, enabled);
 });
 bot.recognizer(recognizer);
 
 bot.dialog("search", [
     (session, args, next) => {
-        const query = builder.EntityRecognizer.findEntity(args.intent.entities, "query");
+        const query = builder.EntityRecognizer.findEntity(args.intent.entities, "person");
         if (!query) {
             // No matching entity 
-            builder.Prompts.text(session, "Who did you want to seach for?");
+            builder.Prompts.text(session, "Who did you want to seach for?"); // geektrainer ryanvolum
         } else {
             // the user types in : search <<name>>
             next({
@@ -85,11 +88,11 @@ bot.dialog("search", [
         })
     }
 ]).triggerAction({
-    matches: 'SearchProfile'
+    matches: 'search'
 })
 
-const server = restify.createServer();
-server.listen(3978, () => {
-    console.log("Server up on port: 3978 !!!");
+bot.dialog('Help', function (session) {
+    session.endDialog('Hi! Can me help you??');
+}).triggerAction({
+    matches: 'Help'
 });
-server.post("api/messages", connector.listen());
