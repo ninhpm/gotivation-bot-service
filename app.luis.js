@@ -7,7 +7,7 @@ const restify = require('restify');
 const githubClient = require("./github-client");
 
 const server = restify.createServer();
-server.listen(3978, () => {
+server.listen(process.env.PORT || 3978, () => {
     console.log("Server up on port: 3978 !!!");
 });
 
