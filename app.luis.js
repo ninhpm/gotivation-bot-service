@@ -72,6 +72,7 @@ bot.dialog("search", [
             console.log(card);
             card.title(profile.login);
             card.images([builder.CardImage.create(session, profile.avatar_url)]);
+            card.buttons([builder.CardAction.imBack(session, profile.name)])
             if (profile.name)
                 card.subtitle(profile.name);
             var text = "";
