@@ -19,7 +19,7 @@ var connector = new builder.ChatConnector({
 server.post("api/messages", connector.listen());
 
 var bot = new builder.UniversalBot(connector, (session) => {
-    session.send('Sorry, I did not understand \'%s\'. Type \'help\' if you need assistance.', session.message.text);
+    session.endConversation('Sorry, I did not understand \'%s\'. Type \'help\' if you need assistance.', session.message.text);
 })
 
 const recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL).onEnabled((context, callback) => {
@@ -52,7 +52,8 @@ bot.dialog("search", [
                     builder.Prompts.text(session, "Sorry, no results found");
                     session.beginDialog("search");
                 } else if (totalCount > 10) {
-                    session.endDialog("More than 10 resut were found. Please prodiver...");
+                    builder.Prompts.text(session, "More than 10 resut were found. Please prodiver...");
+                    session.beginDialog("search");
                 } else {
                     session.dialogData.property = null;
                     var usernames = profiles.items.map(item => item.login);
