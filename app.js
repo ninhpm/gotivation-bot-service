@@ -1,5 +1,6 @@
 const builder = require('botbuilder');
 const restify = require('restify');
+const githubClient = require("./github-client");
 
 var connector = new builder.ChatConnector();
 var bot = new builder.UniversalBot(
@@ -18,7 +19,9 @@ bot.dialog("ensureProfire", [
     (session, args, next) => {
         session.dialogData.profile = args || {};
         if (!session.dialogData.profile.name) {
-            builder.Prompts.text(session, "What is yours name?");
+            builder.Prompts.text(session, "What is yours name?", {
+                retryPrompt: 'Please enter your name....'
+            });
         } else {
             next();
         }
@@ -42,6 +45,20 @@ bot.dialog("ensureProfire", [
         })
     }
 ]);
+
+/**
+ * Global Dialog
+ */
+bot.dialog("help", [
+    (session) => {
+        session.endDialog("I'm a simple bot ....");
+    }
+]).triggerAction({
+    matches: /^help$/,
+    onSelectAction:(session, args)=>{
+        session.beginDialog(args.action, args);
+    }
+})
 
 const server = restify.createServer();
 server.post("api/messages", connector.listen());
