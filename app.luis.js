@@ -1,4 +1,7 @@
 // Tương tác với người dùng
+const env = require("dotenv");
+env.config();
+
 const builder = require('botbuilder');
 const restify = require('restify');
 const githubClient = require("./github-client");
@@ -12,15 +15,26 @@ var bot = new builder.UniversalBot(
     }
 )
 
+const recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL);
+recognizer.onEnabled((context, callback) => {
+    if (context.dialogStack().length > 0) {
+        callback(null, false);
+    } else {
+        callback(null, true);
+    }
+});
+bot.recognizer(recognizer);
+
 bot.dialog("search", [
     (session, args, next) => {
-        if (session.message.text.toLocaleLowerCase() == "search") {
+        const query = builder.EntityRecognizer.findEntity(args.intent.entities, "query");
+        if (!query) {
+            // No matching entity 
             builder.Prompts.text(session, "Who did you want to seach for?");
         } else {
             // the user types in : search <<name>>
-            const query = session.message.text.substring(7);
             next({
-                response: query
+                response: query.entity
             });
         }
     },
@@ -67,15 +81,15 @@ bot.dialog("search", [
             card.text(text);
             card.tap(new builder.CardAction.openUrl(session, profile.html_url));
             var message = new builder.Message(session).attachments([card]);
-            session.send(message);
+            session.endConversation(message);
         })
     }
 ]).triggerAction({
-    matches: /^search/i
+    matches: 'SearchProfile'
 })
 
 const server = restify.createServer();
-server.post("api/messages", connector.listen());
 server.listen(3978, () => {
     console.log("Server up on port: 3978 !!!");
 });
+server.post("api/messages", connector.listen());

@@ -2,7 +2,7 @@
   "name": "bot-chat-facebook",
   "version": "1.0.0",
   "description": "",
-  "main": "app.interaction.js",
+  "main": "app.luis.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "botbuilder": "^3.10.2",
+    "dotenv": "^4.0.0",
     "restify": "^6.0.1"
   }
 }
