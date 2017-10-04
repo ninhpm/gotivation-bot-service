@@ -28,6 +28,19 @@ const recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL).onEnab
 });
 bot.recognizer(recognizer);
 
+bot.use({
+    botbuilder: (session, next) => {
+        const start = /^GET_STARTED|get started|start over|start$/i.test(session.message.text);
+        if (!session.userData.firstRun) {
+            session.userData.firstRun = true;
+            session.send("Wellcome, This is the user search system in http://api.github.com!!!");
+            session.send("Who did you want to seach for?");
+        } else {
+            next();
+        }
+    }
+})
+
 bot.dialog("search", [
     (session, args, next) => {
         const query = builder.EntityRecognizer.findEntity(args.intent.entities, "person");
@@ -49,11 +62,10 @@ bot.dialog("search", [
             githubClient.executeSearch(query, (profiles) => {
                 const totalCount = profiles.total_count;
                 if (totalCount == 0) {
-                    builder.Prompts.text(session, "Sorry, no results found");
+                    session.endConversation("Sorry, no results found");
                     session.beginDialog("search");
                 } else if (totalCount > 10) {
-                    builder.Prompts.text(session, "More than 10 resut were found. Please prodiver...");
-                    session.beginDialog("search");
+                    session.endConversation("More than 10 resut were found. Please prodiver...");
                 } else {
                     session.dialogData.property = null;
                     var usernames = profiles.items.map(item => item.login);
